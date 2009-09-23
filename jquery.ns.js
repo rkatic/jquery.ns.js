@@ -18,23 +18,6 @@
             return pushStack.apply( this, arguments );
         }
     };
-    
-    $._convert_ = function( selector ) {
-        var ret = create( this.fn );
-        ret.selector = this.selector;
-        ret.context = this.context;
-        ret.length = 0;
-        push.apply( ret, this.toArray() );
-        
-        if ( selector ) {
-            ret = ret.find( selector );
-        }
-        
-        ret.prevObject = this;
-        
-        return ret;
-        
-    }
 
     function create_$( proto ) {
         return function() {
@@ -50,25 +33,6 @@
     function create(o) {
         F.prototype = o;
         return new F();
-    }
-    
-    function create_converter( proto ) {
-        
-        return function( selector ) {
-            var ret = create( proto );
-            ret.selector = this.selector;
-            ret.context = this.context;
-            ret.length = 0;
-            push.apply( ret, this.toArray() );
-            
-            if ( selector ) {
-                ret = ret.find( selector );
-            }
-            
-            ret.prevObject = this;
-            
-            return ret;
-        };
     }
     
     function child_ns( parent, name ) {
