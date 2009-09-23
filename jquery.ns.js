@@ -1,6 +1,7 @@
 (function($){
 
     var F = function (){},
+        push = [].push,
         pushStack = $.fn.pushStack;
     
     $.fn.toArray = Array.prototype.slice;
@@ -18,21 +19,40 @@
         }
     };
     
-    function create(o) {
-        F.prototype = o;
-        return new F();
+    $._convert_ = function( selector ) {
+        var ret = create( this.fn );
+        ret.selector = this.selector;
+        ret.context = this.context;
+        ret.length = 0;
+        push.apply( ret, this.toArray() );
+        
+        if ( selector ) {
+            ret = ret.find( selector );
+        }
+        
+        ret.prevObject = this;
+        
+        return ret;
+        
     }
 
     function create_$( proto ) {
         return function() {
-            var ret = create( proto );
-            ret.init.apply( this, arguments );
+            var init = $.fn.init,
+                tmp = init.prototype;
+            init.prototype = proto;
+            var ret = $.apply( this, arguments );
+            init.prototype = tmp;
             return ret;
         };
     }
     
+    function create(o) {
+        F.prototype = o;
+        return new F();
+    }
+    
     function create_converter( proto ) {
-        var push = Array.prototype.push;
         
         return function( selector ) {
             var ret = create( proto );
@@ -62,35 +82,38 @@
             
             //create the proto object
             var proto = create( parent.fn );
+            
             //to easily retrieve the prototype of an instance ($.fn.pushStack)
             proto.proto = proto;
+            
+            proto._ns_ = ns;
             
             //expose the proto to the namespace
             ns.fn = proto;
             
             ns.$ = create_$( proto );
-            parent.fn[ name ] = create_converter( proto );
+            parent.fn[ name ] = function(sel){ return this.ns(ns, sel); };
+        }
+        
+        return ns;
+    }
+    
+    function get_sub_ns( ns, name ) {
+        var parts = name.split('.'),
+            i = 0, l = parts.length;
+        
+        if ( !parts[0] ) ++i;
+        if ( !parts[l-1] ) --l;
+        
+        for ( ; i < l; ++i ) {
+            ns = parts[i] ? child_ns( ns, parts[i] ) : ns.parent;
         }
         
         return ns;
     }
     
     $.ns = function( name, body ) {
-        var ns = this,
-            parts = name.split('.'),
-            i = 0, l = parts.length;
-        
-        if ( !parts[0] ) {
-            ++i;
-        }
-        
-        if ( !parts[l-1] ) {
-            --l;
-        }
-        
-        for ( ; i < l; ++i ) {
-            ns = parts[i] ? child_ns( ns, parts[i] ) : ns.parent;
-        }
+        var ns = get_sub_ns( this, name );
         
         if ( body ) {
             body.call( ns, ns.$ || ns );
@@ -98,5 +121,24 @@
     
         return ns;
     };
+    
+    $.fn.ns = function( nsOrName, selector ) {
+        var ns = (typeof nsOrName === "string") ?
+            get_sub_ns(this._ns_ || $, nsOrName) : nsOrName;
+        
+        var ret = create( ns.fn );
+        ret.selector = this.selector;
+        ret.context = this.context;
+        ret.length = 0;
+        push.apply( ret, this.toArray() );
+            
+        if ( selector ) {
+            ret = ret.find( selector );
+        }
+        
+        ret.prevObject = this;
+        
+        return ret;
+    }
     
 })(jQuery);

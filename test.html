@@ -34,6 +34,7 @@ test('inherit a function to obtain an object', function(){
 });
 
 test('does jQuery uses our reserved properties?', function(){
+    equals( $.fn._ns_, undefined, "$.fn._ns_" );
     equals( $.parent, undefined, "$.parent" );
     equals( $.jquery, undefined, "$.jquery (reserved for $.fn)" );
     equals( $.$, undefined, "$.$" );
@@ -75,6 +76,8 @@ test("fn", function(){
     ok( !q0.test, "ns0 (jQuery) has not a 'test' property" );
     
     ok( q0.ns1().ns2().end().end() === q0, "end()" );
+    
+    ok( q0.ns('ns1.ns2').end() === q0, "end()" );
     
     var q1 = q0.ns1();
     ok( !q1.test, "ns1 has not 'test' property" );
