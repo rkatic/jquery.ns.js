@@ -49,7 +49,6 @@
         proto._ns_ = ns;
         
         ns.$ = create_$( proto );
-        parent.fn[ name ] = function(sel){ return this.ns(ns, sel); };
         
         return ns;
     }
@@ -76,7 +75,7 @@
         return ns;
     };
     
-    $.fn.ns = function( nsOrName, selector ) {
+    $.fn.ns = function( nsOrName ) {
         var ns = (typeof nsOrName === "string") ?
             ( this._ns_ || $ ).ns( nsOrName ) : nsOrName;
         
@@ -85,10 +84,6 @@
         ret.context = this.context;
         ret.length = 0;
         push.apply( ret, this.toArray() );
-            
-        if ( selector ) {
-            ret = ret.find( selector );
-        }
         
         ret.prevObject = this;
         
